@@ -1,6 +1,8 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <a href="https://d3js.org"><img src="https://d3js.org/logo.svg" align="left" hspace="10" vspace="6"></a>
 
+<iframe src="https://raw.githubusercontent.com/michaeljules/social-network-viz/master/html/linkedin-network-viz.html">
+</iframe>
 ``` r
 
 library("rjson")
