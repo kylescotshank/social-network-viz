@@ -6,6 +6,7 @@ output:
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -14,10 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-
-```{r setup, include=FALSE}
-```
+<a href="https://d3js.org"><img src="https://d3js.org/logo.svg" align="left" hspace="10" vspace="6"></a>
 
 ```{r cars}
 
