@@ -1,10 +1,11 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-### Visualize Your LinkedIn Network
+Visualize Your LinkedIn Network
+===============================
 
 This repository is a tutorial demonstrating how to use your LinkedIn data to visualize your professional-social network in R and D3.JS.
 
 1. Install and Load Libraries
-=============================
+-----------------------------
 
 ``` r
 
@@ -15,17 +16,14 @@ library("igraph")
 ```
 
 2. Read in your LinkedIn Data
-=============================
+-----------------------------
 
 ``` r
 l <- fromJSON("https://raw.githubusercontent.com/michaeljules/social-network-viz/master/data/data.js",flatten=TRUE)
 ```
 
-3. Translate Data to Network Object
-===================================
-
-Adjacency Matrix
-----------------
+3. Translate Data to Adjacency Matrix then Network Object
+---------------------------------------------------------
 
 ``` r
 networkData <- l$reducedMatrix
@@ -36,7 +34,7 @@ g <- graph.adjacency(networkData,mode="undirected")
 ```
 
 4. Add Node Attributes to the Network:
-======================================
+--------------------------------------
 
 ``` r
 V(g)$industry <- l$publicConnections$industry[1:499]
@@ -48,7 +46,7 @@ V(g)$headline <- l$publicConnections$headline[1:499]
 ```
 
 5. Calculate Network Centrality Scores For Each Node
-====================================================
+----------------------------------------------------
 
 ``` r
 b <- betweenness(g, v=V(g), directed = FALSE, weights = NULL,
@@ -58,7 +56,7 @@ V(g)$betweenness <- sqrt(b)
 ```
 
 6. Remove Isolates From Network
-===============================
+-------------------------------
 
 ``` r
 #identify isolated nodes
@@ -69,7 +67,7 @@ g <- delete.vertices(g, bad.vs)
 ```
 
 7. Identify Network Communities
-===============================
+-------------------------------
 
 ``` r
 c3 <- cluster_label_prop(g)
@@ -109,7 +107,7 @@ V(g)$c3 <- c3$group
 ```
 
 8. Translate Network Graph to D3
-================================
+--------------------------------
 
 ``` r
 library(networkD3)
@@ -130,13 +128,13 @@ g_d3$nodes$c3 <- V(g)$c3
 
 net <- forceNetwork(Links=g_d3$links,
              Nodes=g_d3$nodes,
-             width=900,
+             width=700,
              height=700,
              NodeID = 'headline', 
              Group  = 'c3',
              radiusCalculation = JS("Math.sqrt(d.nodesize)+5"),
              Nodesize = 'betweenness',
-             charge = -40,
+             charge = -30,
              linkWidth = .4,
              colourScale = JS("d3.scale.category10()"),
              linkColour = "goldenrod",
@@ -150,6 +148,11 @@ net <- forceNetwork(Links=g_d3$links,
 ```
 
 9. Example: My LinkedIn Network
-===============================
+-------------------------------
 
 ![](README-network-1.png)
+
+10. Concluding
+--------------
+
+I hope you found this exercise useful. You can contact me at michael\[at\]beautifuldataviz.com for any questions or suggestions you might have, or to report any bugs in the code.
