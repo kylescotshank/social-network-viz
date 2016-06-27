@@ -3,95 +3,83 @@
 
 This repository is a tutorial demonstrating how to use your LinkedIn data to visualize your professional-social network in R and D3.JS.
 
-``` r
+1. Install and Load Libraries
+=============================
 
-#####
-# Install and Load Libraries
-#####
+``` r
 
 library("networkD3")
 library("rjson")
 library("jsonlite")
-#> 
-#> Attaching package: 'jsonlite'
-#> The following objects are masked from 'package:rjson':
-#> 
-#>     fromJSON, toJSON
 library("igraph") 
-#> 
-#> Attaching package: 'igraph'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     decompose, spectrum
-#> The following object is masked from 'package:base':
-#> 
-#>     union
+```
 
+2. Read in your LinkedIn Data
+=============================
+
+``` r
 l <- fromJSON("https://raw.githubusercontent.com/michaeljules/social-network-viz/master/data/data.js",flatten=TRUE)
+```
 
-#######
-# Translate Data to Network Object
-#######
+3. Translate Data to Network Object
+===================================
 
+Adjacency Matrix
+----------------
+
+``` r
 networkData <- l$reducedMatrix
 rownames(networkData) <- paste0(l$publicConnections$firstName[1:499]," ",l$publicConnections$lastName[1:499])
 colnames(networkData) <- rownames(networkData) 
 
 g <- graph.adjacency(networkData,mode="undirected")
-class(g)
-#> [1] "igraph"
+```
 
-# Add attributes to the network, vertices, or edges:
+4. Add Node Attributes to the Network:
+======================================
+
+``` r
 V(g)$industry <- l$publicConnections$industry[1:499]
 V(g)$location <- l$publicConnections$location.name[1:499]
 V(g)$names <- paste0(l$publicConnections$firstName[1:499]," ",l$publicConnections$lastName[1:499])
 V(g)$click <- l$publicConnections$pictureUrl[1:499]
 V(g)$country <- l$publicConnections$location.country.code[1:499]
 V(g)$headline <- l$publicConnections$headline[1:499]
+```
 
-#######
-# Create Node Dataset
-#######
+5. Calculate Network Centrality Scores For Each Node
+====================================================
 
-nodes <- as.data.frame(cbind(paste0(l$publicConnections$firstName[1:499]," ",l$publicConnections$lastName[1:499]),l$publicConnections$industry[1:499],l$publicConnections$location.name[1:499],l$publicConnections$pictureUrl[1:499],l$publicConnections$location.country.code[1:499]))
-colnames(nodes) <- c("name","industry","location","click","country")
-
-#######
-# Create Links Dataset
-#######
-links <- as.data.frame(get.edgelist(g))
-colnames(links) <- c("source","target")
-
-#######
-# Calculate Network Centrality
-#######
-
+``` r
 b <- betweenness(g, v=V(g), directed = FALSE, weights = NULL,
                  nobigint = TRUE, normalized = FALSE)
+# Take the Square Root of the betweenness measure so nodes are not too large
 V(g)$betweenness <- sqrt(b)
+```
 
-########
-# Remove Isolates
-#######
+6. Remove Isolates From Network
+===============================
 
+``` r
 #identify isolated nodes
 bad.vs <- V(g)[degree(g) == 0] 
 
 # remove isolated nodes
 g <- delete.vertices(g, bad.vs)
+```
 
-#######
-# Calculate Neighborhood Clusters
-######
+7. Identify Network Communities
+===============================
 
-# The neighborhood of a given order o of a vertex v includes all vertices which are closer to v than the order. Ie. order 0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
-
+``` r
 c3 <- cluster_label_prop(g)
+# Note: cluster_label_prop is a fast, nearly linear time algorithm for detecting community structure in networks. In works by labeling the vertices with unique labels and then updating the labels by majority voting in the neighborhood of the vertex.
+
+# Assign community membership to network nodes
 V(g)$c3 <- c3$membership
 
-# Label Group Memberships
+# Label Group Memberships -- These are self-identified network communites based on the function above.
 c3$group <- c3$membership
-#c3$group <- "Misc"
 c3$group[c3$membership==1] <- "Visual Design"
 c3$group[c3$membership==2] <- "Data Science"
 c3$group[c3$membership==3] <- "Architecture & Planning"
@@ -113,14 +101,22 @@ c3$group[c3$membership==18] <- "Other"
 c3$group[c3$membership==19] <- "Engineering"
 c3$group[c3$membership==20] <- "Politics"
 c3$group[c3$membership==21] <- "Media & Marketing"
+c3$group[c3$membership==22] <- "Other"
+c3$group[c3$membership==23] <- "Other"
 
+# Assign Community Membership to Network Nodes
 V(g)$c3 <- c3$group
+```
 
+8. Translate Network Graph to D3
+================================
+
+``` r
 library(networkD3)
-# Translate to iGraph to D3
+
 g_d3 <- igraph_to_networkD3(g)
 
-## Add Attributes
+## Append Node Attributes
 g_d3$nodes$location <- V(g)$location
 g_d3$nodes$industry <- V(g)$industry
 g_d3$nodes$click    <- V(g)$click
@@ -134,13 +130,13 @@ g_d3$nodes$c3 <- V(g)$c3
 
 net <- forceNetwork(Links=g_d3$links,
              Nodes=g_d3$nodes,
-             width=960,
+             width=900,
              height=700,
              NodeID = 'headline', 
              Group  = 'c3',
              radiusCalculation = JS("Math.sqrt(d.nodesize)+5"),
              Nodesize = 'betweenness',
-             charge = -60,
+             charge = -40,
              linkWidth = .4,
              colourScale = JS("d3.scale.category10()"),
              linkColour = "goldenrod",
@@ -153,7 +149,7 @@ net <- forceNetwork(Links=g_d3$links,
              fontSize = 14) 
 ```
 
-Example
--------
+9. Example: My LinkedIn Network
+===============================
 
 ![](README-network-1.png)
