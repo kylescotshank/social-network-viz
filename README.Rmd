@@ -6,7 +6,11 @@ output:
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, echo = FALSE}
+### Visualize Your LinkedIn Network
+
+This repository is a tutorial demonstrating how to use your LinkedIn data to visualize your professional-social network in R and D3.JS.
+
+```{r, echo = FALSE, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -14,12 +18,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-<a href="https://d3js.org"><img src="https://d3js.org/logo.svg" align="left" hspace="10" vspace="6"></a>
 
-<iframe src="https://raw.githubusercontent.com/michaeljules/social-network-viz/master/html/linkedin-network-viz.html"></iframe>
-
-
-```{r cars}
+```{r code,include=FALSE}
 
 #####
 # Install and Load Libraries
@@ -45,9 +45,7 @@ class(g)
 
 # Add attributes to the network, vertices, or edges:
 V(g)$industry <- l$publicConnections$industry[1:499]
-table(V(g)$industry)
 V(g)$location <- l$publicConnections$location.name[1:499]
-table(V(g)$location)
 V(g)$names <- paste0(l$publicConnections$firstName[1:499]," ",l$publicConnections$lastName[1:499])
 V(g)$click <- l$publicConnections$pictureUrl[1:499]
 V(g)$country <- l$publicConnections$location.country.code[1:499]
@@ -73,7 +71,6 @@ colnames(links) <- c("source","target")
 b <- betweenness(g, v=V(g), directed = FALSE, weights = NULL,
                  nobigint = TRUE, normalized = FALSE)
 V(g)$betweenness <- sqrt(b)
-V(g)$betweenness
 
 ########
 # Remove Isolates
@@ -92,7 +89,6 @@ g <- delete.vertices(g, bad.vs)
 # The neighborhood of a given order o of a vertex v includes all vertices which are closer to v than the order. Ie. order 0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
 
 c3 <- cluster_label_prop(g)
-table(c3$membership)
 V(g)$c3 <- c3$membership
 
 # Label Group Memberships
@@ -120,8 +116,6 @@ c3$group[c3$membership==19] <- "Engineering"
 c3$group[c3$membership==20] <- "Politics"
 c3$group[c3$membership==21] <- "Media & Marketing"
 
-table(c3$group)
-table(c3$membership,c3$group)
 V(g)$c3 <- c3$group
 
 library(networkD3)
@@ -159,16 +153,10 @@ net <- forceNetwork(Links=g_d3$links,
              bounded = FALSE,
              fontFamily = "San Francisco",
              fontSize = 14) 
-
 ```
 
-## Including Plots
+## Example
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r network, echo=FALSE}
 net
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
